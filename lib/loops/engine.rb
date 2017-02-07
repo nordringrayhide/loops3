@@ -148,32 +148,28 @@ class Loops::Engine
     end
 
     loop_proc = Proc.new do |worker|
-      the_logger = begin
-          if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
-            # this is happening right after the fork, therefore no need for teardown at the end of the proc
-            Loops.logger.logfile = config['logger'] if config['logger']
-            Loops.logger
-          else
-            # for backwards compatibility and handling threading engine
-            create_logger(name, config)
-          end
-      end
-
-      # Set logger level
-      if String === config['log_level']
-        level = Logger::Severity.const_get(config['log_level'].upcase) rescue nil
-        the_logger.level = level if level
-      elsif Integer === config['log_level']
-        the_logger.level = config['log_level']
-      end
-
-      # Colorize logging?
-      if the_logger.respond_to?(:colorful_logs=) && (config.has_key?('colorful_logs') || config.has_key?('colourful_logs'))
-        the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs']
-      end
-
       debug "Instantiating class: #{klass}"
       the_loop = klass.new(worker, name, config)
+
+      if config['logger']
+        the_logger = create_logger(name, config)
+
+        # Set logger level
+        if String === config['log_level']
+          level = Logger::Severity.const_get(config['log_level'].upcase) rescue nil
+          the_logger.level = level if level
+        elsif Integer === config['log_level']
+          the_logger.level = config['log_level']
+        end
+
+        # Colorize logging?
+        if the_logger.respond_to?(:colorful_logs=) && (config.has_key?('colorful_logs') || config.has_key?('colourful_logs'))
+          the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs']
+        end
+
+        worker.logger = the_logger
+        the_loop.logger = the_logger
+      end
 
       debug "Starting the loop #{name}!"
       # reseed the random number generator in case Loops calls

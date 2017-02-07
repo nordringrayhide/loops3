@@ -16,7 +16,11 @@ module Loops
     end
 
     def logger
-      @pm.logger
+      @logger || @pm.logger
+    end
+
+    def logger=(logger)
+      @logger = logger
     end
 
     def shutdown?

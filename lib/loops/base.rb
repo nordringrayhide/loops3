@@ -67,7 +67,11 @@ class Loops::Base
   #   the logger instance.
   #
   def logger
-    @pm.logger
+    @logger || @pm.logger
+  end
+
+  def logger=(logger)
+    @logger = logger
   end
 
   # Get a value indicating whether shutdown is in the progress.
