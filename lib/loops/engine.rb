@@ -195,8 +195,7 @@ class Loops::Engine
     config['logger'] ||= 'default'
 
     return Loops.default_logger if config['logger'] == 'default'
-    Loops::Logger.new(config['logger'])
-
+    Loops.logger.class.new(config['logger'])
   rescue => e
     message = "Can't create a logger for the #{loop_name} loop! Will log to the default logger!"
     puts "ERROR: #{message}"
